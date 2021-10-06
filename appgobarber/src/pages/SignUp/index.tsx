@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useCallback } from "react";
 import { Container, Title, BacktoSignIn, BacktoSignInText } from "./styles";
 import Input from "../../components/Input";
 import Button from "../../components/Button";
@@ -10,18 +10,69 @@ import {
   View,
   ScrollView,
   Keyboard,
-  TextInput
+  TextInput,
+  Alert
 } from "react-native";
 import Icon from "react-native-vector-icons/Feather";
 import { useNavigation } from "@react-navigation/core";
 import { Form } from "@unform/mobile";
 import { FormHandles } from "@unform/core";
+import * as Yup from 'yup';
+import getValidationErrors from '../../utils/getValidationErrors'
+
+interface SignInFormData{
+  nome: string
+  email: string
+  password: string
+}
+
 
 const SignUp: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
   const navigation = useNavigation();
   const emailInputRef = useRef<TextInput>(null)
   const passwordInputRef = useRef<TextInput>(null)
+
+
+  const handleSignUp = useCallback(
+    async (data: SignInFormData) => {
+      try {
+        formRef.current?.setErrors({});
+
+        const schema = Yup.object().shape({
+          name: Yup.string().required('Nome obrigatório'),
+          email: Yup.string()
+            .required('E-mail obrigatório')
+            .email('Digite um e-mail válido'),
+          password: Yup.string().required('No minimo 6 digitos'),
+        });
+
+        await schema.validate(data, {
+          abortEarly: false,
+        });
+
+        /* await signIn({
+          email: data.email,
+          password: data.password,
+        }); */
+
+        Alert.alert(`🎉🧔 GoBarber 💇‍♂️️💈️`, `Bem vindo ao app`);
+      } catch (err) {
+        if (err instanceof Yup.ValidationError) {
+          const errors = getValidationErrors(err);
+          console.log(errors)
+          formRef.current?.setErrors(errors);
+          return;
+        }
+
+        Alert.alert(
+          'Erro na autenticação 🥴',
+          'Ocorreu um erro ao fazer login, cheque as credenciais.',
+        );
+      }
+    },
+    [],
+  );
 
   return (
     <>
@@ -41,9 +92,7 @@ const SignUp: React.FC = () => {
             </View>
             <Form
               ref={formRef}
-              onSubmit={(data) => {
-                console.log(data);
-              }}
+              onSubmit={handleSignUp}
             >
               <Input
 

@@ -54,7 +54,7 @@ const Input: React.FC<InputProps> = ({ name, icon, ...rest }) => {
   }, [fieldName, registerField]);
 
   return (
-    <Container isFocused={isFocused}>
+    <Container isFocused={isFocused} isErrored={!!error}>
       <Icon name={icon} size={20} color={isFocused || isField ? '#ff9000' : '#666360'} />
       <TextInput
         ref={inputElementRef}
